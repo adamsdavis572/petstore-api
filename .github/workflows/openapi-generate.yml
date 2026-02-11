@@ -57,6 +57,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "${{ env.CUSTOM_GEN_URL }}" \
             -o ${{ env.GENERATOR_DIR }}/custom-generator.jar
+          ls -al ${{ env.GENERATOR_DIR }}
 
       - name: Generate Server Code
         run: |
