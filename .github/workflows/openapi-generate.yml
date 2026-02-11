@@ -3,7 +3,7 @@ name: OpenAPI Code Generator
 on:
   push:
     paths:
-      - 'specs/petstore.yaml'
+      - 'spec/petstore.yaml'
   workflow_dispatch:
 
 permissions:
@@ -13,7 +13,7 @@ permissions:
 env:
   GENERATOR_DIR: "generator"
   TEST_OUTPUT_DIR: "generated-code"
-  PETSTORE_SPEC: "specs/petstore.yaml"
+  PETSTORE_SPEC: "spec/petstore.yaml"
   
   # Standard CLI URL (Public Maven Central, no auth needed)
   CLI_URL: "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.17.0/openapi-generator-cli-7.17.0.jar"
