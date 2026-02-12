@@ -1,0 +1,5 @@
+packageName: PetstoreApi
+useMediatr: true
+useValidators: true
+useProblemDetails: true
+useNugetPackaging: true
