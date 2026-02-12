@@ -1,0 +1,74 @@
+#pragma warning disable ASP0020 // Complex types as query parameters
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using PetstoreApi.Commands;
+using PetstoreApi.Queries;
+using PetstoreApi.DTOs;
+
+namespace PetstoreApi.Endpoints;
+
+/// <summary>
+/// Minimal API endpoints for FakeApi operations
+/// </summary>
+public static class FakeApiEndpoints
+{
+    /// <summary>
+    /// Maps all FakeApi endpoints to the route group
+    /// </summary>
+    public static RouteGroupBuilder MapFakeApiEndpoints(this RouteGroupBuilder group)
+    {
+        // Get /fake/nullable_example_test - Fake endpoint to test nullable example (object)
+        group.MapGet("/fake/nullable_example_test", async (IMediator mediator) =>
+        {
+            // MediatR delegation
+            var query = new FakeNullableExampleTestQuery
+            {
+            };
+            var result = await mediator.Send(query);
+            if (result == null) return Results.NotFound();
+            return Results.Ok(result);
+        })
+        .WithName("FakeNullableExampleTest")
+        .WithSummary("Fake endpoint to test nullable example (object)")
+        .Produces<TestNullableDto>(200)
+        .ProducesProblem(400);
+
+        // Get /fake/parameter_example_test - fake endpoint to test parameter example (object)
+        group.MapGet("/fake/parameter_example_test", async (IMediator mediator, HttpContext httpContext) =>
+        {
+            // Deserialize complex object from query parameter
+            var dataJson = httpContext.Request.Query["data"].FirstOrDefault();
+            if (string.IsNullOrEmpty(dataJson))
+            {
+                return Results.BadRequest("Missing required query parameter: data");
+            }
+            PetDto? data = null;
+            try
+            {
+                data = System.Text.Json.JsonSerializer.Deserialize<PetDto>(dataJson);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return Results.BadRequest("Invalid JSON in query parameter: data");
+            }
+            if (data == null)
+            {
+                return Results.BadRequest("Failed to deserialize query parameter: data");
+            }
+            
+            // MediatR delegation
+            var query = new FakeParameterExampleTestQuery
+            {
+                data = data
+            };
+            var result = await mediator.Send(query);
+            return Results.Ok();
+        })
+        .WithName("FakeParameterExampleTest")
+        .WithSummary("fake endpoint to test parameter example (object)")
+        .ProducesProblem(400);
+
+        return group;
+    }
+}
