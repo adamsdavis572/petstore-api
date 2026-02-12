@@ -15,6 +15,9 @@ env:
   TEST_OUTPUT_DIR: "generated-code"
   PETSTORE_SPEC: "spec/petstore.yaml"
   
+  ACTIONS_STEP_DEBUG: true
+  ACTIONS_RUNNER_DEBUG: true
+
   # Standard CLI URL (Public Maven Central, no auth needed)
   CLI_URL: "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.17.0/openapi-generator-cli-7.17.0.jar"
   
@@ -59,6 +62,21 @@ jobs:
             -o ${{ env.GENERATOR_DIR }}/custom-generator.jar
           ls -al ${{ env.GENERATOR_DIR }}
 
+      - name: Debug - List Downloaded Files
+        run: |
+          echo "Contents of generator directory:"
+          ls -lah ${{ env.GENERATOR_DIR }}
+          
+      - name: Debug - Verify JARs
+        run: |
+          echo "Checking CLI JAR:"
+          file ${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar
+          echo "Checking Custom Generator JAR:"
+          file ${{ env.GENERATOR_DIR }}/custom-generator.jar
+
+      - name: Debug - Environment Variables
+        run: env | sort
+
       - name: Generate Server Code
         run: |
           rm -rf ${{ env.TEST_OUTPUT_DIR }}
@@ -67,7 +85,7 @@ jobs:
           # Using the config file approach (create dummy config for demo)
           echo '{"packageName":"PetstoreApi","useMediatr":true,"useValidators":true}' > generator-config.json
 
-          java -cp "${{ env.GENERATOR_DIR }}/custom-generator.jar:${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar" \
+          java -cp "${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar:${{ env.GENERATOR_DIR }}/custom-generator.jar" \
             org.openapitools.codegen.OpenAPIGenerator generate \
             -g aspnetcore-minimalapi \
             -i ${{ env.PETSTORE_SPEC }} \
