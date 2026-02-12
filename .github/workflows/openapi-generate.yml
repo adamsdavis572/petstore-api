@@ -51,16 +51,20 @@ jobs:
         run: |
           echo "Downloading Custom Generator JAR from GitHub Packages..."
           
-          # We use curl with the Authorization header. 
-          # -L follows redirects
-          # -H adds the auth header
-          # -o saves to file
-          
-          curl -L \
+          # Add -v for verbose output and -f to fail on HTTP errors
+          curl -L -v -f \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "${{ env.CUSTOM_GEN_URL }}" \
             -o ${{ env.GENERATOR_DIR }}/custom-generator.jar
-          ls -al ${{ env.GENERATOR_DIR }}
+          
+          echo "Download complete. File info:"
+          ls -lh ${{ env.GENERATOR_DIR }}/custom-generator.jar
+          file ${{ env.GENERATOR_DIR }}/custom-generator.jar
+          
+          # Show first few bytes to see what was downloaded
+          echo "First 100 bytes of downloaded file:"
+          head -c 100 ${{ env.GENERATOR_DIR }}/custom-generator.jar
+
 
       - name: Debug - List Downloaded Files
         run: |
