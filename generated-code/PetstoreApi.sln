@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetstoreApi", "src\PetstoreApi\PetstoreApi.csproj", "{D3AA15CE-88D3-4FF4-9DD8-29A7C4FD56F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetstoreApi.Contracts", "src\PetstoreApi.Contracts\PetstoreApi.Contracts.csproj", "{75D4624A-7299-4B6F-B2BD-E5A57D915C0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetstoreApi", "src\PetstoreApi\PetstoreApi.csproj", "{5A116D0C-9899-4C35-AB96-145773C17AB5}"
 EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +13,19 @@ Global
         Release|Any CPU = Release|Any CPU
     EndGlobalSection
     GlobalSection(ProjectConfigurationPlatforms) = postSolution
-        {D3AA15CE-88D3-4FF4-9DD8-29A7C4FD56F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-        {D3AA15CE-88D3-4FF4-9DD8-29A7C4FD56F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-        {D3AA15CE-88D3-4FF4-9DD8-29A7C4FD56F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-        {D3AA15CE-88D3-4FF4-9DD8-29A7C4FD56F7}.Release|Any CPU.Build.0 = Release|Any CPU
+        {75D4624A-7299-4B6F-B2BD-E5A57D915C0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {75D4624A-7299-4B6F-B2BD-E5A57D915C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {75D4624A-7299-4B6F-B2BD-E5A57D915C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {75D4624A-7299-4B6F-B2BD-E5A57D915C0F}.Release|Any CPU.Build.0 = Release|Any CPU
+        {5A116D0C-9899-4C35-AB96-145773C17AB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {5A116D0C-9899-4C35-AB96-145773C17AB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {5A116D0C-9899-4C35-AB96-145773C17AB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {5A116D0C-9899-4C35-AB96-145773C17AB5}.Release|Any CPU.Build.0 = Release|Any CPU
     EndGlobalSection
     GlobalSection(SolutionProperties) = preSolution
         HideSolutionNode = FALSE
     EndGlobalSection
     GlobalSection(ExtensibilityGlobals) = postSolution
-        SolutionGuid = {8363477C-3D25-42F6-8761-0099B5601C53}
+        SolutionGuid = {A6101E7A-D6ED-46C3-9800-006B8E4FF997}
     EndGlobalSection
 EndGlobal

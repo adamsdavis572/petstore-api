@@ -1,5 +1,6 @@
 using FluentValidation;
 using PetstoreApi.Extensions;
+using PetstoreApi.Contracts.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,10 +22,12 @@ builder.Services.AddSwaggerGen(c =>
         Version = "1.0.1"
     });
 });
-
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddProblemDetails();
+// Register validators from Contracts package
+builder.Services.AddApiValidators();
 builder.Services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(PetstoreApi.Behaviors.ValidationBehavior<,>));
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+// Register handlers from Implementation assembly
+builder.Services.AddApiHandlers();
 builder.Services.AddApplicationServices();
 
 var app = builder.Build();
@@ -41,54 +44,67 @@ app.UseExceptionHandler(exceptionHandlerApp =>
         if (exception is FluentValidation.ValidationException validationException)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             
-            var errors = validationException.Errors
-                .GroupBy(x => x.PropertyName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(x => x.ErrorMessage).ToArray()
-                );
+            var problemDetails = new Microsoft.AspNetCore.Http.HttpValidationProblemDetails(
+                validationException.Errors
+                    .GroupBy(x => x.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(x => x.ErrorMessage).ToArray()
+                    ))
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Validation failed",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+            };
 
-            await context.Response.WriteAsJsonAsync(new 
-            { 
-                error = "Validation failed",
-                message = "One or more validation errors occurred",
-                errors = errors
-            });
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
         else if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badRequestException)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             
-            await context.Response.WriteAsJsonAsync(new 
-            { 
-                error = "Bad Request",
-                message = badRequestException.Message
-            });
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = badRequestException.Message,
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+            };
+
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
         else if (exception is System.Text.Json.JsonException jsonException)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             
-            await context.Response.WriteAsJsonAsync(new 
-            { 
-                error = "Invalid JSON",
-                message = "The request body contains invalid JSON"
-            });
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid JSON",
+                Detail = "The request body contains invalid JSON",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+            };
+
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
         else
         {
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             
-            await context.Response.WriteAsJsonAsync(new 
-            { 
-                error = "Internal Server Error",
-                message = app.Environment.IsDevelopment() ? exception?.Message : "An unexpected error occurred"
-            });
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "An error occurred",
+                Detail = app.Environment.IsDevelopment() ? exception?.Message : "An unexpected error occurred",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+            };
+
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
     });
 });
@@ -112,7 +128,8 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
     .Produces(200);
 
 
-app.MapAllEndpoints();
+// Register all API endpoints from Contracts package
+app.AddApiEndpoints();
 
 app.Run();
 
