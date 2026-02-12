@@ -23,7 +23,7 @@ env:
   
   # Custom Generator URL (GitHub Packages)
   # NOTE: Ensure this path is correct. Usually it is https://maven.pkg.github.com/<USER>/<REPO>/<GROUP_PATH>/<ARTIFACT>/<VERSION>/<JAR>
-  CUSTOM_GEN_URL: "https://maven.pkg.github.com/adamsdavis572/minimal-api-gen/org/openapitools/aspnet-minimalapi-openapi-generator/0.0.1/aspnet-minimalapi-openapi-generator-0.0.1.jar"
+  CUSTOM_GEN_URL: "https://github.com/adamsdavis572/minimal-api-gen/releases/download/0.0.1/aspnet-minimalapi-openapi-generator.jar"
 
 jobs:
   generate-and-commit:
