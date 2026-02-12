@@ -74,7 +74,7 @@ jobs:
           # Using the config file approach (create dummy config for demo)
           echo '{"packageName":"PetstoreApi","useMediatr":true,"useValidators":true}' > generator-config.json
 
-          java -cp "${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar:${{ env.GENERATOR_DIR }}/custom-generator.jar" \
+          java -cp "${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar:${{ env.GENERATOR_DIR }}/aspnet-minimalapi-openapi-generator.jar" \
             org.openapitools.codegen.OpenAPIGenerator generate \
             -g aspnetcore-minimalapi \
             -i ${{ env.PETSTORE_SPEC }} \
