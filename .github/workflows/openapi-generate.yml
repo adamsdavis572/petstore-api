@@ -14,6 +14,7 @@ env:
   GENERATOR_DIR: "generator"
   TEST_OUTPUT_DIR: "generated-code"
   PETSTORE_SPEC: "spec/petstore.yaml"
+  CUSTOM_GEN_VERSION: "0.0.1" # Enable debug logging for GitHub Actions
   
   ACTIONS_STEP_DEBUG: true
   ACTIONS_RUNNER_DEBUG: true
@@ -21,10 +22,6 @@ env:
   # Standard CLI URL (Public Maven Central, no auth needed)
   CLI_URL: "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.17.0/openapi-generator-cli-7.17.0.jar"
   
-  # Custom Generator URL (GitHub Packages)
-  # NOTE: Ensure this path is correct. Usually it is https://maven.pkg.github.com/<USER>/<REPO>/<GROUP_PATH>/<ARTIFACT>/<VERSION>/<JAR>
-  CUSTOM_GEN_URL: "https://github.com/adamsdavis572/minimal-api-gen/releases/download/0.0.1/aspnet-minimalapi-openapi-generator.jar"
-
 jobs:
   generate-and-commit:
     runs-on: ubuntu-latest
@@ -47,39 +44,27 @@ jobs:
           echo "Downloading OpenAPI Generator CLI..."
           wget -q ${{ env.CLI_URL }} -O ${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar
 
-      - name: Download Custom Generator (Authenticated)
+      - name: Download Custom Generator release asset
         run: |
-          echo "Downloading Custom Generator JAR from GitHub Packages..."
-          
-          # Add -v for verbose output and -f to fail on HTTP errors
-          curl -L -v -f \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "${{ env.CUSTOM_GEN_URL }}" \
-            -o ${{ env.GENERATOR_DIR }}/custom-generator.jar
-          
-          echo "Download complete. File info:"
-          ls -lh ${{ env.GENERATOR_DIR }}/custom-generator.jar
-          file ${{ env.GENERATOR_DIR }}/custom-generator.jar
-          
-          # Show first few bytes to see what was downloaded
-          echo "First 100 bytes of downloaded file:"
-          head -c 100 ${{ env.GENERATOR_DIR }}/custom-generator.jar
+          mkdir -p bin
+          gh release download ${{ env.CUSTOM_GEN_VERSION }} \
+            --repo adamsdavis572/minimal-api-gen \
+            --pattern 'aspnet-minimalapi-openapi-generator.jar' \
+            --dir ${{ env.GENERATOR_DIR }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-
-      - name: Debug - List Downloaded Files
+      - name: List Downloaded Files
         run: |
           echo "Contents of generator directory:"
           ls -lah ${{ env.GENERATOR_DIR }}
           
-      - name: Debug - Verify JARs
+      - name: Verify JARs
         run: |
           echo "Checking CLI JAR:"
           file ${{ env.GENERATOR_DIR }}/openapi-generator-cli.jar
           echo "Checking Custom Generator JAR:"
-          file ${{ env.GENERATOR_DIR }}/custom-generator.jar
-
-      - name: Debug - Environment Variables
-        run: env | sort
+          file ${{ env.GENERATOR_DIR }}/aspnet-minimalapi-openapi-generator.jar
 
       - name: Generate Server Code
         run: |
