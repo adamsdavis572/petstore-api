@@ -1,5 +1,6 @@
 using PetstoreApi.Endpoints;
 
+
 namespace PetstoreApi.Extensions;
 
 /// <summary>

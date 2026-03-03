@@ -1,4 +1,5 @@
 using FluentValidation;
+using PetstoreApi.Configurators;
 using PetstoreApi.Extensions;
 using PetstoreApi.Contracts.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -28,86 +29,19 @@ builder.Services.AddApiValidators();
 builder.Services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(PetstoreApi.Behaviors.ValidationBehavior<,>));
 // Register handlers from Implementation assembly
 builder.Services.AddApiHandlers();
-builder.Services.AddApplicationServices();
+
+// --- Scan and register application-specific services ---
+var serviceConfigurators = typeof(Program).Assembly.GetTypes()
+    .Where(t => typeof(IServiceConfigurator).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+    .Select(Activator.CreateInstance)
+    .Cast<IServiceConfigurator>();
+foreach (var configurator in serviceConfigurators)
+    configurator.ConfigureServices(builder.Services, builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-// Global exception handler for validation and model binding errors
-app.UseExceptionHandler(exceptionHandlerApp =>
-{
-    exceptionHandlerApp.Run(async context =>
-    {
-        var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
-        var exception = exceptionHandlerPathFeature?.Error;
-
-        if (exception is FluentValidation.ValidationException validationException)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/problem+json";
-            
-            var problemDetails = new Microsoft.AspNetCore.Http.HttpValidationProblemDetails(
-                validationException.Errors
-                    .GroupBy(x => x.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(x => x.ErrorMessage).ToArray()
-                    ))
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Validation failed",
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-            };
-
-            await context.Response.WriteAsJsonAsync(problemDetails);
-        }
-        else if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badRequestException)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/problem+json";
-            
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Bad Request",
-                Detail = badRequestException.Message,
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-            };
-
-            await context.Response.WriteAsJsonAsync(problemDetails);
-        }
-        else if (exception is System.Text.Json.JsonException jsonException)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/problem+json";
-            
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Invalid JSON",
-                Detail = "The request body contains invalid JSON",
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-            };
-
-            await context.Response.WriteAsJsonAsync(problemDetails);
-        }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            context.Response.ContentType = "application/problem+json";
-            
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "An error occurred",
-                Detail = app.Environment.IsDevelopment() ? exception?.Message : "An unexpected error occurred",
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
-            };
-
-            await context.Response.WriteAsJsonAsync(problemDetails);
-        }
-    });
-});
+app.UseApiExceptionHandler(app.Environment);
 
 if (app.Environment.IsDevelopment())
 {
@@ -121,15 +55,23 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+// --- Scan and configure application-specific middleware (ordered) ---
+var appConfigurators = typeof(Program).Assembly.GetTypes()
+    .Where(t => typeof(IApplicationConfigurator).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+    .Select(Activator.CreateInstance)
+    .Cast<IApplicationConfigurator>()
+    .OrderBy(c => c.Order);
+foreach (var configurator in appConfigurators)
+    configurator.Configure(app, app.Environment);
+
+// Register all API endpoints (IEndpointFilter instances from DI are applied automatically)
+app.AddApiEndpoints();
+
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
     .WithName("HealthCheck")
     .WithTags("Health")
     .Produces(200);
-
-
-// Register all API endpoints from Contracts package
-app.AddApiEndpoints();
 
 app.Run();
 

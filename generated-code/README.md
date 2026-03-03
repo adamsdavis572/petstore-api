@@ -11,7 +11,6 @@ For more information regarding FastEndpoints, please visit the [FastEndpoints we
 The following feature have been enabled in this project :
 
 - [Problem Details](https://fast-endpoints.com/docs/configuration-settings#rfc7807-rfc9457-compatible-problem-details)
-
 - [Validation](https://fast-endpoints.com/docs/validation)
 
 ## NuGet Packaging Workflow
