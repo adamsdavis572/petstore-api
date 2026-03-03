@@ -44,7 +44,8 @@ jobs:
       - name: Download Custom Generator release asset
         run: |
           mkdir -p bin
-          gh release download \
+          tag="$(gh release list --repo adamsdavis572/minimal-api-gen --limit 1 | awk '{print $1}')"
+          gh release download "$tag" \
             --repo adamsdavis572/minimal-api-gen \
             --pattern 'aspnet-minimalapi-openapi-generator.jar' \
             --dir ${{ env.GENERATOR_DIR }}
