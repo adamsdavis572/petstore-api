@@ -1,17 +1,16 @@
-# PetstoreApi - FastEndpoints ASP.NET Server
+# PetstoreApi - ASP.NET Core Minimal API Server
 This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters.
 
 ## Documentation
 
-This generated project include basic configuration for FastEndpoints ASP.NET Server.
-For more information regarding FastEndpoints, please visit the [FastEndpoints website](https://fast-endpoints.com).
+This generated project includes basic configuration for an [ASP.NET Core Minimal API](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/overview) server using [MediatR](https://github.com/jbogard/MediatR) for request handling.
 
 ## Enabled Features
 
-The following feature have been enabled in this project :
+The following features have been enabled in this project:
 
-- [Problem Details](https://fast-endpoints.com/docs/configuration-settings#rfc7807-rfc9457-compatible-problem-details)
-- [Validation](https://fast-endpoints.com/docs/validation)
+- [Problem Details](https://learn.microsoft.com/en-us/aspnet/core/web-api/handle-errors#problem-details-service)
+- [Validation (FluentValidation)](https://docs.fluentvalidation.net/en/latest/)
 
 ## NuGet Packaging Workflow
 
